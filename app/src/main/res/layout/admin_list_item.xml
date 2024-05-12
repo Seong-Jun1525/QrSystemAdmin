@@ -25,7 +25,6 @@
                 android:textStyle="bold"
                 android:textSize="14sp"
                 android:gravity="center"
-                android:textColor="@color/mainText"
                 android:fontFamily="@font/nanumgothicregular" />
             <TextView
                 android:id="@+id/adminId"
@@ -35,7 +34,6 @@
                 android:textStyle="bold"
                 android:textSize="14sp"
                 android:gravity="center"
-                android:textColor="@color/mainText"
                 android:fontFamily="@font/nanumgothicregular" />
             <TextView
                 android:id="@+id/adminPosition"
@@ -45,7 +43,6 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:gravity="center"
-                android:textColor="@color/mainText"
                 android:fontFamily="@font/nanumgothicregular" />
             <ImageView
                 android:id="@+id/outBtn"

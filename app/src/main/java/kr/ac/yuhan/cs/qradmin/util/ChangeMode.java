@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import soup.neumorphism.NeumorphButton;
@@ -39,6 +41,9 @@ public class ChangeMode {
             // DarkMode
             textColor = Color.WHITE;
             buttonColor = Color.BLACK;
+        } else if(mode == 2) {
+            textColor = Color.BLACK;
+            buttonColor = Color.GRAY;
         } else {
             // LightMode
             textColor = Color.rgb(0, 105, 97);
@@ -50,10 +55,14 @@ public class ChangeMode {
     }
 
     private static void setTextColor(View view, int color) {
-        if (view instanceof TextView) {
+        if(view instanceof RadioGroup) {
+
+        }
+        else if (view instanceof TextView) {
             // Change FontColor if view is TextView
             ((TextView) view).setTextColor(color);
-        } else if (view instanceof ViewGroup) {
+        }
+        else if (view instanceof ViewGroup) {
             // If the view is a ViewGroup, recursively change the color for all views in that ViewGroup
             ViewGroup viewGroup = (ViewGroup) view;
             for (int i = 0; i < viewGroup.getChildCount(); i++) {
@@ -63,13 +72,17 @@ public class ChangeMode {
     }
 
     private static void setButtonColor(View view, int backgroundColor) {
-        if (view instanceof Button) {
+        if(view instanceof RadioGroup) {
+
+        }
+        else if (view instanceof Button) {
             // Change FontColor if view is Button
             Button button = (Button) view;
             button.setBackgroundColor(backgroundColor);
             ColorStateList colorStateList = ColorStateList.valueOf(Color.WHITE);
             button.setTextColor(colorStateList); // Set the button's font color to always be white
-        } else if (view instanceof ViewGroup) {
+        }
+        else if (view instanceof ViewGroup) {
             // If the view is a ViewGroup, recursively change the color for all views in that ViewGroup
             ViewGroup viewGroup = (ViewGroup) view;
             for (int i = 0; i < viewGroup.getChildCount(); i++) {

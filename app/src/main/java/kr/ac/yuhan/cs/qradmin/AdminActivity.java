@@ -24,24 +24,22 @@ import soup.neumorphism.NeumorphCardView;
 import soup.neumorphism.NeumorphImageView;
 
 public class AdminActivity extends AppCompatActivity {
-    private NeumorphCardView adminListCardView;
-    private NeumorphCardView editTextSearchAdminField;
-    private NeumorphButton adminSearchBtn;
-    private NeumorphImageView backBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_page);
 
-        LinearLayout adminListPage = (LinearLayout) findViewById(R.id.adminListPage);
-
-        ListView listView = findViewById(R.id.listView);
+        NeumorphCardView adminListCardView;
+        NeumorphCardView editTextSearchAdminField;
+        NeumorphButton adminSearchBtn;
+        NeumorphImageView backBtn;
+        LinearLayout adminListPage;
+        ListView listView;
 
         // Create Fake Date
         ArrayList<AdminData> fakeDataList = createFakeData();
         // Setting Adapter
         AdminAdapter adapter = new AdminAdapter(this, fakeDataList);
-        listView.setAdapter(adapter);
 
         // Receives current mode value
         int modeValue = getIntent().getIntExtra("mode", 1);
@@ -53,11 +51,16 @@ public class AdminActivity extends AppCompatActivity {
         View backgroundView = getWindow().getDecorView().getRootView();
         backgroundView.setBackgroundColor(backgroundColor);
 
+        adminListPage = findViewById(R.id.adminListPage);
+        listView = findViewById(R.id.listView);
+
+        listView.setAdapter(adapter);
+
         // Admin Page Id
-        backBtn = (NeumorphImageView) findViewById(R.id.backBtn);
-        adminListCardView = (NeumorphCardView) findViewById(R.id.adminListCardView);
-        editTextSearchAdminField = (NeumorphCardView) findViewById(R.id.editTextSearchAdminField);
-        adminSearchBtn = (NeumorphButton) findViewById(R.id.adminSearchBtn);
+        backBtn = findViewById(R.id.backBtn);
+        adminListCardView = findViewById(R.id.adminListCardView);
+        editTextSearchAdminField = findViewById(R.id.editTextSearchAdminField);
+        adminSearchBtn = findViewById(R.id.adminSearchBtn);
 
         // listView onItemClickListener
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -106,7 +109,7 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
     // Create Fake Data
-    private ArrayList<AdminData> createFakeData() {
+    ArrayList<AdminData> createFakeData() {
         ArrayList<AdminData> dataList = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
             // Create Fake Data & Add AdminList
@@ -128,20 +131,20 @@ public class AdminActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-    private void showAdminInfoDialog(AdminData selectedItem) {
+    void showAdminInfoDialog(AdminData selectedItem) {
         // Create Dialog & Layout Setting
         Dialog dialog = new Dialog(AdminActivity.this);
         dialog.setContentView(R.layout.dialog_admin_item_info);
 
         // Get TextView ID in Dialog
         TextView textViewAdminNum = dialog.findViewById(R.id.textViewAdminNum);
-        textViewAdminNum.setText("Num: " + selectedItem.getAdminNum());
+        textViewAdminNum.setText("Num : " + selectedItem.getAdminNum());
 
         TextView textViewAdminId = dialog.findViewById(R.id.textViewAdminId);
-        textViewAdminId.setText("Id: " + selectedItem.getAdminId());
+        textViewAdminId.setText("관리자 ID : " + selectedItem.getAdminId());
 
         TextView textViewAdminPosition = dialog.findViewById(R.id.textViewAdminPosition);
-        textViewAdminPosition.setText("Postion: " + selectedItem.getAdminPosition());
+        textViewAdminPosition.setText("직책 : " + selectedItem.getAdminPosition());
 
         // Show Dialog
         dialog.show();

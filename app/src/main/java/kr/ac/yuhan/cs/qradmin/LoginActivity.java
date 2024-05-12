@@ -28,7 +28,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_page);
 
-        LinearLayout loginPage = (LinearLayout) findViewById(R.id.loginPage);
+        LinearLayout loginPage = findViewById(R.id.loginPage);
 
         // Receives current mode value
         int modeValue = getIntent().getIntExtra("mode", 1);
@@ -44,15 +44,15 @@ public class LoginActivity extends AppCompatActivity {
         Drawable darkPwImage = getResources().getDrawable(R.drawable.lock);
 
         // Login Page Btn
-        backBtn = (NeumorphImageView) findViewById(R.id.backBtn);
-        loginBtn = (NeumorphButton) findViewById(R.id.loginBtn);
+        backBtn = findViewById(R.id.backBtn);
+        loginBtn = findViewById(R.id.loginBtn);
 
         // Login Page CardView content
-        NeumorphCardView loginCardView = (NeumorphCardView) findViewById(R.id.loginCardView);
-        NeumorphCardView editTextIdField = (NeumorphCardView) findViewById(R.id.editTextIdField);
-        NeumorphCardView editTextPwField = (NeumorphCardView) findViewById(R.id.editTextPwField);
-        EditText input_id = (EditText) findViewById(R.id.input_id);
-        EditText input_pw = (EditText) findViewById(R.id.input_pw);
+        NeumorphCardView loginCardView = findViewById(R.id.loginCardView);
+        NeumorphCardView editTextIdField = findViewById(R.id.editTextIdField);
+        NeumorphCardView editTextPwField = findViewById(R.id.editTextPwField);
+        EditText input_id = findViewById(R.id.input_id);
+        EditText input_pw = findViewById(R.id.input_pw);
 
         if(modeValue == 1) {
             // DarkMode
@@ -67,12 +67,12 @@ public class LoginActivity extends AppCompatActivity {
             // Login Page Btn
             ChangeMode.setColorFilterDark(backBtn);
             ChangeMode.setDarkShadowCardView(backBtn);
+            ChangeMode.setDarkShadowCardView(loginBtn);
 
             // Login Page CardView content
             ChangeMode.setDarkShadowCardView(loginCardView);
             ChangeMode.setDarkShadowCardView(editTextIdField);
             ChangeMode.setDarkShadowCardView(editTextPwField);
-            ChangeMode.setDarkShadowCardView(loginBtn);
         }
         else {
             // LightMode

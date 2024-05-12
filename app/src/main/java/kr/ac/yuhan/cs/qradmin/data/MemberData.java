@@ -5,14 +5,14 @@ import java.util.Date;
 public class MemberData {
     // Member Data Field
     private int number;
-    private String userId;
+    private String memberId;
     private Date joinDate;
     private int point;
 
     // MemberData Constructor
-    public MemberData(int number, String userId, Date joinDate, int point) {
+    public MemberData(int number, String memberId, Date joinDate, int point) {
         this.number = number;
-        this.userId = userId;
+        this.memberId = memberId;
         this.joinDate = joinDate;
         this.point = point;
     }
@@ -22,8 +22,8 @@ public class MemberData {
         return number;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getMemberId() {
+        return memberId;
     }
 
     public Date getJoinDate() {

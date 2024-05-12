@@ -1,6 +1,8 @@
 package kr.ac.yuhan.cs.qradmin;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -30,10 +33,16 @@ import com.google.firebase.storage.UploadTask;
 import java.util.HashMap;
 import java.util.Map;
 
-public class pr_edit extends AppCompatActivity {
+import kr.ac.yuhan.cs.qradmin.util.ChangeMode;
+import soup.neumorphism.NeumorphButton;
+import soup.neumorphism.NeumorphCardView;
+import soup.neumorphism.NeumorphImageView;
+
+public class ProductEditActivity extends AppCompatActivity {
     private FirebaseFirestore dbFirestore;
     private EditText editProductName2, editProductPrice2, editProductStock2;
     private Button buttonUpdateProduct2;
+    private NeumorphImageView backBtn;
     private RadioGroup radioGroup2;
     private String ProductCategory2;
     private static final int PICK_FILE_REQUEST = 2; // 파일 선택을 위한 요청 코드
@@ -44,21 +53,72 @@ public class pr_edit extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pr_edit);
+        setContentView(R.layout.activity_product_edit);
+        LinearLayout productEditPage = findViewById(R.id.productEditPage);
+
+        int backgroundColor = Color.rgb(97, 97, 97);
+
+        // Setting BackgroundColor
+        View backgroundView = getWindow().getDecorView().getRootView();
+        backgroundView.setBackgroundColor(backgroundColor);
+
+        // Intent에서 데이터 추출
+        Intent intent = getIntent();
 
         String categorystr1 = getString(R.string.product_category1);
         String categorystr2 = getString(R.string.product_category2);
         String categorystr3 = getString(R.string.product_category3);
 
+        // 추출한 데이터 사용가능하게 변수로 만들기
+        int productCode = intent.getIntExtra("productCode", 0);
+        String productName = intent.getStringExtra("productName");
+        // 이미지는 특별한 처리가 필요
+        String productImage = intent.getStringExtra("productImage");
+        // 가격과 재고는 int, double 또는 다른 숫자 타입일 수 있습니다. 적절한 메서드 사용
+        int productPrice = intent.getIntExtra("productPrice", 0); // 기본값을 설정
+        int productStock = intent.getIntExtra("productStock", 0);
+        String category = intent.getStringExtra("category");
+
         // UI 컴포넌트 초기화
+        NeumorphCardView productEditCardView = findViewById(R.id.productEditCardView);
+        NeumorphCardView editTextProductName = findViewById(R.id.editTextProductName);
+        NeumorphCardView editTextProductImage = findViewById(R.id.editTextProductImage);
+        NeumorphCardView editTextProductPrice = findViewById(R.id.editTextProductPrice);
+        NeumorphCardView editTextProductStock = findViewById(R.id.editTextProductStock);
+        NeumorphCardView editTextProductCategory = findViewById(R.id.editTextProductCategory);
+
         editProductName2 = findViewById(R.id.editProductName2);
         editProductPrice2 = findViewById(R.id.editProductPrice2);
         editProductStock2 = findViewById(R.id.editProductStock2);
         buttonUpdateProduct2 = findViewById(R.id.buttonUpdateProduct2);
+        backBtn = findViewById(R.id.backBtn);
         imageViewProduct2 = findViewById(R.id.imageViewProduct2);
+        radioGroup2 = findViewById(R.id.categroryRadioGroup2);
+        editProductName2.setText(productName);
+        editProductPrice2.setText(String.valueOf(productPrice)); // int 값을 String으로 변환
+        editProductStock2.setText(String.valueOf(productStock)); // int 값을 String으로 변환
+
+        // EditMode
+        ChangeMode.applySubTheme(productEditPage, 1);
+
+        // Product Edit Page Btn
+        ChangeMode.setColorFilterDark(buttonUpdateProduct2);
+        ChangeMode.setDarkShadowCardView(buttonUpdateProduct2);
+        ChangeMode.setColorFilterDark(backBtn);
+        ChangeMode.setDarkShadowCardView(backBtn);
+
+        // Product Edit Page CardView content
+        ChangeMode.setDarkShadowCardView(productEditCardView);
+        ChangeMode.setDarkShadowCardView(editTextProductName);
+        ChangeMode.setDarkShadowCardView(editTextProductImage);
+        ChangeMode.setDarkShadowCardView(editTextProductPrice);
+        ChangeMode.setDarkShadowCardView(editTextProductStock);
+        ChangeMode.setDarkShadowCardView(editTextProductCategory);
+
+
         dbFirestore = FirebaseFirestore.getInstance();
 
-        radioGroup2 = findViewById(R.id.categroryRadioGroup2);
+
         radioGroup2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -71,27 +131,13 @@ public class pr_edit extends AppCompatActivity {
                 }
             }
         });
+
         //카테고리를 클릭하지 않고 넘기는 경우 기본값으로 지정ㅇ
         if(ProductCategory2 == null){
             ProductCategory2=categorystr1;
         }
-        // Intent에서 데이터 추출
-        Intent intent = getIntent();
-
-        // 추출한 데이터 사용가능하게 변수로 만들기
-        int productCode = intent.getIntExtra("productCode", 0);
-        String productName = intent.getStringExtra("productName");
-        // 이미지는 특별한 처리가 필요
-        String productImage = intent.getStringExtra("productImage");
-        // 가격과 재고는 int, double 또는 다른 숫자 타입일 수 있습니다. 적절한 메서드 사용
-        int productPrice = intent.getIntExtra("productPrice", 0); // 기본값을 설정
-        int productStock = intent.getIntExtra("productStock", 0);
-        String category = intent.getStringExtra("category");
 
         // 읽어온 값으로 세팅
-        editProductName2.setText(productName);
-        editProductPrice2.setText(String.valueOf(productPrice)); // int 값을 String으로 변환
-        editProductStock2.setText(String.valueOf(productStock)); // int 값을 String으로 변환
         if(category == categorystr1){
             radioGroup2.check(R.id.categoryRadioBtns1);
         } else if( category == categorystr2){
@@ -121,6 +167,23 @@ public class pr_edit extends AppCompatActivity {
                 // productCode를 이용하여 데이터베이스에 연동하고 업데이트하는 메서드
                 updateProductByCode(productCode);
 
+            }
+        });
+
+        // BackBtn onClickListener
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Change ShapeType to 'pressed' when clicked
+                backBtn.setShapeType(1);
+                // After clicked, it changes back to 'flat'
+                v.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        backBtn.setShapeType(0);
+                    }
+                }, 200);
+                finish();
             }
         });
 
@@ -185,7 +248,7 @@ public class pr_edit extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Log.w("Upload File", "Error uploading file", e);
-                    Toast.makeText(pr_edit.this, "파일 업로드 실패", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductEditActivity.this, "파일 업로드 실패", Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
@@ -202,7 +265,7 @@ public class pr_edit extends AppCompatActivity {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("Update Firestore", "DocumentSnapshot successfully updated.");
-                        Toast.makeText(pr_edit.this, "상품 정보가 성공적으로 업데이트되었습니다.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProductEditActivity.this, "상품 정보가 성공적으로 업데이트되었습니다.", Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 })
@@ -210,7 +273,7 @@ public class pr_edit extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w("Update Firestore", "Error updating document", e);
-                        Toast.makeText(pr_edit.this, "상품 정보 업데이트 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProductEditActivity.this, "상품 정보 업데이트 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -228,7 +291,7 @@ public class pr_edit extends AppCompatActivity {
                                 for (QueryDocumentSnapshot document : querySnapshot) {
                                     Log.d("Firestore Success", "Document found with ID: " + document.getId());
                                     updateProductInFirestore(document.getId());
-                                    Toast.makeText(pr_edit.this, "서버와 연동으로 인해 약간의 딜레이가 발생할 수 있습니다.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ProductEditActivity.this, "서버와 연동으로 인해 약간의 딜레이가 발생할 수 있습니다.", Toast.LENGTH_SHORT).show();
                                     finishActivityWithResult();
                                 }
                             } else {
@@ -243,7 +306,7 @@ public class pr_edit extends AppCompatActivity {
     }
 
     private void finishActivityWithResult() {
-        Intent database_viewIntent = new Intent(pr_edit.this, MainActivity.class);
+        Intent database_viewIntent = new Intent(ProductEditActivity.this, MainActivity.class);
         database_viewIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(database_viewIntent);
         finish();

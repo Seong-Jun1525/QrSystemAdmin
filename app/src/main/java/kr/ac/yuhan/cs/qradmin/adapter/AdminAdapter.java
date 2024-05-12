@@ -48,7 +48,7 @@ public class AdminAdapter extends BaseAdapter {
 
         if (convertView == null) {
             // ViewHolder Init
-            convertView = inflater.inflate(R.layout.admin_list, parent, false);
+            convertView = inflater.inflate(R.layout.admin_list_item, parent, false);
             viewHolder = new ViewHolder();
             // Id of admin_list.xml
             viewHolder.numberTextView = convertView.findViewById(R.id.number);

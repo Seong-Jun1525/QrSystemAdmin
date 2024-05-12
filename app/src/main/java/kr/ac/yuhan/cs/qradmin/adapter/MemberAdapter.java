@@ -49,7 +49,7 @@ public class MemberAdapter extends BaseAdapter {
 
         if (convertView == null) {
             // ViewHolder Init
-            convertView = inflater.inflate(R.layout.member_list, parent, false);
+            convertView = inflater.inflate(R.layout.member_list_item, parent, false);
             viewHolder = new ViewHolder();
             // Id of member_list.xml
             viewHolder.numberTextView = convertView.findViewById(R.id.number);
@@ -64,7 +64,7 @@ public class MemberAdapter extends BaseAdapter {
 
         MemberData memberData = memberList.get(position);
         viewHolder.numberTextView.setText(String.valueOf(memberData.getNumber()));
-        viewHolder.memberIdTextView.setText(memberData.getUserId());
+        viewHolder.memberIdTextView.setText(memberData.getMemberId());
         viewHolder.memberPointTextView.setText(String.valueOf(memberData.getPoint()));
 
         // outBtn onClickListener

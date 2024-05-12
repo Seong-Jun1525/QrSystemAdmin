@@ -16,21 +16,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
@@ -42,22 +39,25 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import kr.ac.yuhan.cs.qradmin.adapter.MemberAdapter;
 import kr.ac.yuhan.cs.qradmin.adapter.ProductAdapter;
 import kr.ac.yuhan.cs.qradmin.data.MemberData;
+import kr.ac.yuhan.cs.qradmin.data.ProductData;
 import kr.ac.yuhan.cs.qradmin.util.ChangeMode;
 import soup.neumorphism.NeumorphButton;
 import soup.neumorphism.NeumorphCardView;
 import soup.neumorphism.NeumorphImageView;
 
 public class MainActivity extends AppCompatActivity {
-    // Current Mode Value
-    private int mode = 0;
+    // 다크/라이트 모드 초기값
+    public int mode = 0;
 
     // MainActivity CardView
     private NeumorphCardView mainCardView;
@@ -74,6 +74,14 @@ public class MainActivity extends AppCompatActivity {
     private NeumorphCardView input_searchId;
     private NeumorphButton memberSearchBtn;
     private NeumorphCardView memberListCardView;
+    private ListView memberListView;
+
+    // Product Menu
+    private NeumorphCardView input_searchIdProduct;
+    private NeumorphButton productSearchBtn;
+    private NeumorphCardView productListCardView;
+    private EditText productSearchEditText;
+    private String currentSearchText = ""; // 현재 검색 텍스트 저장
 
     // HOME Menu
     private NeumorphCardView adminBtn;
@@ -105,94 +113,70 @@ public class MainActivity extends AppCompatActivity {
     private NeumorphImageView setting;
     private NeumorphImageView changeMode;
 
+    private ViewFlipper vFlipper;
+
     // Basic BackgroundColor
     private int backgroundColor;
     private int mainBackgroundColor = Color.rgb(236, 240, 243);
     private final int darkModeBackgroundColor = Color.rgb(97, 97, 97);
     private final int btnColor = Color.rgb(0, 174, 142);
 
-    //오자현추가부분
-    private ViewFlipper vFlipper;
-    private FirebaseFirestore dbFirestore;
+    // 오자현 추가 부분
+    private FirebaseFirestore dbFireStore;
     private ImageView imageViewProduct;
     private Uri fileuri = null;
     private static final int PICK_FILE_REQUEST = 2; // 파일 선택을 위한 요청 코드
     private EditText editProductName, editProductPrice, editProductStock;
     private String ProductCategory;
     private RadioGroup radioGroup;
-    private ListView listView2;
+    private ListView productListView;
     private ProductAdapter adapter2;
     private Handler handler = new Handler();
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            loadItemsFromFirestore(); // 파이어베이스에서 데이터를 불러오는 메서드 호출
-            handler.postDelayed(this, 5000); // 5초 후에 다시 실행하도록 스케줄링
-        }
-    };
+    private Runnable runnable;
 
-    private ArrayList<Product> productList = new ArrayList<>(); // 상품 정보를 담을 리스트
+    private ArrayList<ProductData> productDataList = new ArrayList<>(); // 상품 정보를 담을 리스트
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String categorystr1 = getString(R.string.product_category1);
-        String categorystr2 = getString(R.string.product_category2);
-        String categorystr3 = getString(R.string.product_category3);
-
-        // Listview Setting
-        ListView listView = findViewById(R.id.listView);
-
         // Create Fake Data
         ArrayList<MemberData> fakeDataList = createFakeData();
 
+        String product_categoryDefault = getString(R.string.product_categoryDefault); // 카테고리 기본값 (성준 추가 부분)
+        String categoryStr1 = getString(R.string.product_category1);
+        String categoryStr2 = getString(R.string.product_category2);
+        String categoryStr3 = getString(R.string.product_category3);
+
+        // Member Listview Setting
+        memberListView = findViewById(R.id.memberListView);
+
+        // ProductList Listview Setting
+        productListView = findViewById(R.id.productListView);
+
         // MemberAdapter Setting
         MemberAdapter adapter = new MemberAdapter(this, fakeDataList);
-        listView.setAdapter(adapter);
+        memberListView.setAdapter(adapter);
 
-        // 오자현추가부분
-        listView2 = findViewById(R.id.listViewProducts); // 레이아웃에서 리스트 뷰 연결
-
-        radioGroup = findViewById(R.id.categroryRadioGroup);
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if(checkedId == R.id.categoryRadioBtn1){
-                    ProductCategory=categorystr1;
-                } else if (checkedId ==R.id.categoryRadioBtn2) {
-                    ProductCategory=categorystr2;
-                }else if (checkedId ==R.id.categoryRadioBtn3) {
-                    ProductCategory=categorystr3;
-                }
-            }
-        });
-        //카테고리를 클릭하지 않고 넘기는 경우 기본값으로 지정ㅇ
+        // 카테고리를 클릭하지 않고 넘기는 경우 기본값으로 지정
         if(ProductCategory == null){
-            ProductCategory=categorystr1;
+            ProductCategory = product_categoryDefault;
         }
 
-        adapter2 = new ProductAdapter(this, productList);// 여기서 객체를 생성할 때 문제가 있음
-        listView2.setAdapter(adapter2); // 리스트 뷰에 어댑터 설정
+        adapter2 = new ProductAdapter(this, productDataList);
+        productListView.setAdapter(adapter2); // 리스트 뷰에 어댑터 설정
+        startAutoRefresh();
+        loadItemsFromFireStore();
 
-        loadItemsFromFirestore();
-        handler.postDelayed(runnable, 5000); // 5초마다 데이터를 새로 고침
-        imageViewProduct = findViewById(R.id.imageViewProduct);
-        imageViewProduct.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openFileManager();
-            }
-        });
         editProductName = findViewById(R.id.editProductName);
         editProductPrice = findViewById(R.id.editProductPrice);
         editProductStock = findViewById(R.id.editProductStock);
-        dbFirestore = FirebaseFirestore.getInstance();
+        dbFireStore = FirebaseFirestore.getInstance();
 
 
         // ViewFlipper Setting
-        vFlipper = (ViewFlipper) findViewById(R.id.viewFlipper1);
+        vFlipper = findViewById(R.id.viewFlipper1);
 
         // Main Layout Setting
         LinearLayout main = findViewById(R.id.main);
@@ -205,45 +189,54 @@ public class MainActivity extends AppCompatActivity {
         mainBackgroundColor = ((ColorDrawable) backgroundDrawable).getColor();
 
         // MainActivity Header Id
-        setting = (NeumorphImageView) findViewById(R.id.setting);
-        changeMode = (NeumorphImageView) findViewById(R.id.darkMode);
+        setting = findViewById(R.id.setting);
+        changeMode = findViewById(R.id.darkMode);
 
         // Admin MainPage ImageView Id
-        adminList = (ImageView) findViewById(R.id.adminList);
-        call = (ImageView) findViewById(R.id.call);
-        adminLogin = (ImageView) findViewById(R.id.adminLogin);
-        adminSchedule = (ImageView) findViewById(R.id.adminSchedule);
+        adminList = findViewById(R.id.adminList);
+        call = findViewById(R.id.call);
+        adminLogin = findViewById(R.id.adminLogin);
+        adminSchedule = findViewById(R.id.adminSchedule);
 
         // MainActivity CardView & Footer Id
-        mainCardView = (NeumorphCardView) findViewById(R.id.mainCardView);
-        footer_menu = (NeumorphCardView) findViewById(R.id.footer_menu);
+        mainCardView = findViewById(R.id.mainCardView);
+        footer_menu = findViewById(R.id.footer_menu);
 
-        // User Management Page Id
-        input_searchId = (NeumorphCardView) findViewById(R.id.input_searchId);
-        memberSearchBtn = (NeumorphButton) findViewById(R.id.memberSearchBtn);
-        memberListCardView = (NeumorphCardView) findViewById(R.id.memberListCardView);
+        // Member Management Page Id
+        input_searchId = findViewById(R.id.input_searchId);
+        memberSearchBtn = findViewById(R.id.memberSearchBtn);
+        memberListCardView = findViewById(R.id.memberListCardView);
 
-        // Payment List Id
-        paySearchBtn = (NeumorphButton) findViewById(R.id.paySearchBtn);
-        payListCardView = (NeumorphCardView) findViewById(R.id.payListCardView);
-        input_searchIdPay =(NeumorphCardView) findViewById(R.id.input_searchIdPay);
+        // Product Management Page Id
+        input_searchIdProduct = findViewById(R.id.input_searchIdProduct);
+        productSearchBtn = findViewById(R.id.productSearchBtn);
+        productListCardView = findViewById(R.id.productListCardView);
+        imageViewProduct = findViewById(R.id.imageViewProduct);
+        productSearchEditText = findViewById(R.id.productSearchEditText);
+        productSearchBtn = findViewById(R.id.productSearchBtn);
 
-        // Product Register Page Id
-        input_productImage = (NeumorphCardView) findViewById(R.id.input_productImage);
-        input_productName = (NeumorphCardView) findViewById(R.id.input_productName);
-        input_productQuantity = (NeumorphCardView) findViewById(R.id.input_productQuantity);
-        input_productCategory = (NeumorphCardView) findViewById(R.id.input_productCategory);
-        input_productPrice = (NeumorphCardView) findViewById(R.id.input_productPrice);
-        createQRBtn = (NeumorphButton) findViewById(R.id.createQRBtn);
-        createProductBtn = (NeumorphButton) findViewById(R.id.createProductBtn);
-        memberSearchBtn = (NeumorphButton) findViewById(R.id.memberSearchBtn);
+        // Payment List Page Id
+        paySearchBtn = findViewById(R.id.paySearchBtn);
+        payListCardView = findViewById(R.id.payListCardView);
+        input_searchIdPay =findViewById(R.id.input_searchIdPay);
+
+        // ProductData Register Page Id
+        input_productImage = findViewById(R.id.input_productImage);
+        input_productName = findViewById(R.id.input_productName);
+        input_productQuantity = findViewById(R.id.input_productQuantity);
+        input_productCategory = findViewById(R.id.input_productCategory);
+        input_productPrice = findViewById(R.id.input_productPrice);
+        radioGroup = findViewById(R.id.categoryRadioGroup);
+        createQRBtn = findViewById(R.id.createQRBtn);
+        createProductBtn = findViewById(R.id.createProductBtn);
+        memberSearchBtn = findViewById(R.id.memberSearchBtn);
 
         // Footer Menu Icon Id
-        memberBtn = (NeumorphImageView) findViewById(R.id.memberBtn);
-        productBtn = (NeumorphImageView) findViewById(R.id.productBtn);
-        homeBtn = (NeumorphImageView) findViewById(R.id.homeBtn);
-        payHistoryBtn = (NeumorphImageView) findViewById(R.id.payHistoryBtn);
-        productPushBtn = (NeumorphImageView) findViewById(R.id.productPushBtn);
+        memberBtn = findViewById(R.id.memberBtn);
+        productBtn = findViewById(R.id.productBtn);
+        homeBtn = findViewById(R.id.homeBtn);
+        payHistoryBtn = findViewById(R.id.payHistoryBtn);
+        productPushBtn = findViewById(R.id.productPushBtn);
 
         // MainActivity Button BackgroundColor Setting
         createQRBtn.setBackgroundColor(btnColor);
@@ -252,18 +245,28 @@ public class MainActivity extends AppCompatActivity {
         paySearchBtn.setBackgroundColor(btnColor);
 
         // MainActivity Home Menu CardView Id
-        login = (NeumorphCardView) findViewById(R.id.login);
-        adminBtn = (NeumorphCardView) findViewById(R.id.adminBtn);
-        adminScheduleBtn = (NeumorphCardView) findViewById(R.id.adminScheduleBtn);
-        callBtn = (NeumorphCardView) findViewById(R.id.callBtn);
+        login = findViewById(R.id.login);
+        adminBtn = findViewById(R.id.adminBtn);
+        adminScheduleBtn = findViewById(R.id.adminScheduleBtn);
+        callBtn = findViewById(R.id.callBtn);
 
-        // ListView Item onClickListener
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        // Member ListView Item onClickListener
+        memberListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Get Information of Clicked Member Item
                 MemberData selectedItem = fakeDataList.get(position);
                 showMemberInfoDialog(selectedItem);
+            }
+        });
+
+        // Product ListView Item onClickListener
+        productListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get Information of Clicked Member Item
+                ProductData selectedItem = productDataList.get(position);
+                showProductInfoDialog(selectedItem);
             }
         });
 
@@ -310,6 +313,11 @@ public class MainActivity extends AppCompatActivity {
                     ChangeMode.setDarkShadowCardView(input_searchId);
                     ChangeMode.setDarkShadowCardView(memberSearchBtn);
                     ChangeMode.setDarkShadowCardView(memberListCardView);
+
+                    // 상품 관리 페이지 CardView
+                    ChangeMode.setDarkShadowCardView(input_searchIdProduct);
+                    ChangeMode.setDarkShadowCardView(productSearchBtn);
+                    ChangeMode.setDarkShadowCardView(productListCardView);
 
                     // AdminMain Page CardView
                     ChangeMode.setDarkShadowCardView(adminBtn);
@@ -376,6 +384,11 @@ public class MainActivity extends AppCompatActivity {
                     ChangeMode.setLightShadowCardView(input_searchId);
                     ChangeMode.setLightShadowCardView(memberSearchBtn);
                     ChangeMode.setLightShadowCardView(memberListCardView);
+
+                    // 상품 관리 페이지 CardView
+                    ChangeMode.setLightShadowCardView(input_searchIdProduct);
+                    ChangeMode.setLightShadowCardView(productSearchBtn);
+                    ChangeMode.setLightShadowCardView(productListCardView);
 
                     // AdminMain Page CardView
                     ChangeMode.setLightShadowCardView(adminBtn);
@@ -497,7 +510,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         createProductBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -571,6 +583,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        productSearchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String searchText = productSearchEditText.getText().toString();
+                productSearchEditText.setText("");
+                currentSearchText = searchText; // 현재 검색 텍스트 업데이트
+                loadItemsFromFireStore(); // 필터링된 상품 새로고침
+                currentSearchText="";
+            }
+        });
+
+        imageViewProduct.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openFileManager();
+            }
+        });
+
         // PayHistoryBtn onClickListener
         payHistoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -583,6 +613,20 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {payHistoryBtn.setShapeType(0);}
                 }, 200);
                 vFlipper.setDisplayedChild(3);
+            }
+        });
+
+        // RadioGroup OnCheckedChangeListener
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == R.id.categoryRadioBtn1) {
+                    ProductCategory = categoryStr1;
+                } else if (checkedId == R.id.categoryRadioBtn2) {
+                    ProductCategory = categoryStr2;
+                } else if (checkedId == R.id.categoryRadioBtn3) {
+                    ProductCategory = categoryStr3;
+                }
             }
         });
 
@@ -628,36 +672,95 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-    private void showMemberInfoDialog(MemberData selectedItem) {
+
+    // ProductData Info Dialog
+    private void showProductInfoDialog(ProductData selectedItem) {
         // Create Dialog & Layout Setting
         Dialog dialog = new Dialog(MainActivity.this);
-        dialog.setContentView(R.layout.dialog_user_item_info);
+        dialog.setContentView(R.layout.dialog_product_item_info);
 
         // Get TextView ID in Dialog
-        TextView textViewMemberId = dialog.findViewById(R.id.textViewUserNum);
-        textViewMemberId.setText("Num: " + selectedItem.getNumber());
+        ImageView imageViewProductImage = dialog.findViewById(R.id.imageViewProductImage);
+        Glide.with(MainActivity.this)
+                .load(selectedItem.getProductImage())
+                .placeholder(R.drawable.default_image) // 로드 중 이미지
+                .into(imageViewProductImage);
 
-        TextView textViewMemberName = dialog.findViewById(R.id.textViewUserId);
-        textViewMemberName.setText("Name: " + selectedItem.getUserId());
+        TextView textViewProductCode = dialog.findViewById(R.id.textViewProductCode);
+        textViewProductCode.setText("상품코드: " + selectedItem.getProductCode());
 
-        TextView textViewMemberDate = dialog.findViewById(R.id.textViewUserDate);
-        textViewMemberDate.setText("Date: " + selectedItem.getJoinDate().toString());
+        TextView textViewProductName = dialog.findViewById(R.id.textViewProductName);
+        textViewProductName.setText("상품명: " + selectedItem.getProductName());
 
-        TextView textViewMemberAmount = dialog.findViewById(R.id.textViewUserPoint);
-        textViewMemberAmount.setText("Point: $" + selectedItem.getPoint());
+        TextView textViewProductCategory = dialog.findViewById(R.id.textViewProductCategory);
+        textViewProductCategory.setText("카테고리: " + selectedItem.getProductCategory());
+
+        TextView textViewProductStock = dialog.findViewById(R.id.textViewProductStock);
+        textViewProductStock.setText("상품재고: " + selectedItem.getProductStock());
+
+        TextView textViewProductPrice = dialog.findViewById(R.id.textViewProductPrice);
+        textViewProductPrice.setText("상품가격: " + selectedItem.getProductPrice() + "원");
 
         // Show Dialog
         dialog.show();
     }
-    //오자현 추가부분
 
-    void loadItemsFromFirestore() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance(); // 파이어베이스 인스턴스 생성
-        db.collection("products").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+    // Member Info Dialog
+    private void showMemberInfoDialog(MemberData selectedItem) {
+        // Create Dialog & Layout Setting
+        Dialog dialog = new Dialog(MainActivity.this);
+        dialog.setContentView(R.layout.dialog_member_item_info);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String formattedDate = sdf.format(selectedItem.getJoinDate());
+
+        // Get TextView ID in Dialog
+        TextView textViewMemberId = dialog.findViewById(R.id.textViewMemberNum);
+        textViewMemberId.setText("Num : " + selectedItem.getNumber());
+
+        TextView textViewMemberName = dialog.findViewById(R.id.textViewMemberId);
+        textViewMemberName.setText("회원ID : " + selectedItem.getMemberId());
+
+        TextView textViewMemberDate = dialog.findViewById(R.id.textViewMemberDate);
+        textViewMemberDate.setText("가입날짜 : " + formattedDate);
+
+        TextView textViewMemberAmount = dialog.findViewById(R.id.textViewMemberPoint);
+        textViewMemberAmount.setText("Point : " + selectedItem.getPoint() + "점");
+
+        // Show Dialog
+        dialog.show();
+    }
+
+    //오자현 추가부분
+    private void startAutoRefresh() {
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                loadItemsFromFireStore();
+                handler.postDelayed(this, 5000);  // 5초 후에 다시 실행하도록 스케줄링, 일시정지 여부와 상관없이 스케줄 유지
+            }
+        };
+        handler.postDelayed(runnable, 5000);  // 처음 시작
+    }
+
+    void loadItemsFromFireStore() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Task<QuerySnapshot> query;
+
+        if (!currentSearchText.isEmpty()) {
+            // 검색 텍스트가 있을 경우, 해당 상품 이름으로 필터링된 쿼리 실행
+            query = db.collection("products")
+                    .whereEqualTo("productName", currentSearchText)
+                    .get();
+        } else {
+            // 검색 텍스트가 없을 경우, 전체 상품 로드
+            query = db.collection("products").get();
+        }
+
+        query.addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    productList.clear(); // 기존의 리스트를 클리어
+                    productDataList.clear(); // 기존의 리스트를 클리어
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         int code = document.getLong("productCode").intValue();
                         String productName = document.getString("productName");
@@ -671,7 +774,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         Log.d("DatabaseViewActivity", "Loaded imageUrl: " + imageUrl);
-                        productList.add(new Product(code, productName, category, imageUrl, price, stock)); // 리스트에 제품 추가
+                        productDataList.add(new ProductData(code, productName, category, imageUrl, price, stock)); // 리스트에 제품 추가
                     }
 
                     adapter2.notifyDataSetChanged(); // 데이터 변경을 어댑터에 알림
@@ -706,12 +809,12 @@ public class MainActivity extends AppCompatActivity {
             Log.d("UploadFile", "파이어베이스업로드리스너 진입");
             String fileUrl = uri.toString();
 
-            // Firestore에서 productCounter 문서를 업데이트하고 새 productCode를 가져옵니다.
-            // Firestore에서 counters 컬렉션을 만들고  productCounter 문서를 직접 생성한다.
-            // lastProductCode 필드에 초기값(예: 0)을 설정합니다. 데이터타입은 number 이 문서가 없으면 프로그램이 진행 안됨
-            // 만약에 상품컬렉션을 지웠으면 이거도 관리해서 0으로 만들것(수동임)
-            DocumentReference counterRef = dbFirestore.collection("counters").document("productCounter");
-            dbFirestore.runTransaction(transaction -> {
+            // Firestore에서 productCounter 문서를 업데이트하고 새 productCode를 가져온다
+            // Firestore에서 counters 컬렉션을 만들고  productCounter 문서를 직접 생성한다
+            // lastProductCode 필드에 초기값(예: 0)을 설정. 데이터 타입은 number 이 문서가 없으면 프로그램이 진행 안됨
+            // 만약에 상품 컬렉션을 지웠으면 이거도 관리해서 0으로 만들것(수동임)
+            DocumentReference counterRef = dbFireStore.collection("counters").document("productCounter");
+            dbFireStore.runTransaction(transaction -> {
                 DocumentSnapshot counterSnapshot = transaction.get(counterRef);
                 Long lastProductCode = counterSnapshot.getLong("lastProductCode");
                 if (lastProductCode == null) lastProductCode = 0L; // 초기값 설정
@@ -727,7 +830,7 @@ public class MainActivity extends AppCompatActivity {
                 product.put("category", category);
                 product.put("productCode", newProductCode); // 새로운 productCode 사용
 
-                dbFirestore.collection("products").add(product).addOnSuccessListener(documentReference -> {
+                dbFireStore.collection("products").add(product).addOnSuccessListener(documentReference -> {
                     Toast.makeText(MainActivity.this, "상품 정보와 파일 URL 파이어베이스에 저장 성공", Toast.LENGTH_SHORT).show();
                     finishActivityWithResult();
                 }).addOnFailureListener(e -> {

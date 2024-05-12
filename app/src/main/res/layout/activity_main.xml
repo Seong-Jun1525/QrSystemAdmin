@@ -243,12 +243,12 @@
                     android:padding="30dp"
                     app:neumorph_shapeType="pressed">
                     <ListView
-                        android:id="@+id/listView"
+                        android:id="@+id/memberListView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                 </soup.neumorphism.NeumorphCardView>
             </LinearLayout>
-            <!-- Product Management -->
+            <!-- ProductData Management -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -261,10 +261,52 @@
                     android:textSize="25sp"
                     android:textStyle="bold"
                     android:textColor="@color/mainText" />
-                <ListView
-                    android:id="@+id/listViewProducts"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <soup.neumorphism.NeumorphCardView
+                        style="@style/Widget.Neumorph.CardView"
+                        android:id="@+id/input_searchIdProduct"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="6"
+                        android:padding="15dp"
+                        app:neumorph_shapeType="pressed">
+                        <EditText
+                            android:id="@+id/productSearchEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@android:color/transparent"
+                            android:fontFamily="@font/nanumgothicregular"
+                            android:hint="@string/productSearchIdHint"
+                            android:autofillHints="productName"
+                            android:inputType="text"
+                            android:padding="10dp"
+                            android:textColor="@color/mainText"
+                            android:textSize="15sp" />
+                    </soup.neumorphism.NeumorphCardView>
+                    <soup.neumorphism.NeumorphButton
+                        style="@style/Widget.Neumorph.Button"
+                        android:id="@+id/productSearchBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/search"
+                        android:padding="0dp"
+                        android:textSize="20sp" />
+                </LinearLayout>
+                <soup.neumorphism.NeumorphCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:id="@+id/productListCardView"
+                    android:gravity="center"
+                    app:neumorph_shapeType="pressed">
+                    <ListView
+                        android:id="@+id/productListView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </soup.neumorphism.NeumorphCardView>
             </LinearLayout>
             <!-- PaymentList -->
             <LinearLayout
@@ -279,39 +321,39 @@
                     android:textSize="25sp"
                     android:textStyle="bold"
                     android:textColor="@color/mainText" />
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <soup.neumorphism.NeumorphCardView
-                        style="@style/Widget.Neumorph.CardView"
-                        android:id="@+id/input_searchIdPay"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="6"
-                        android:padding="15dp"
-                        app:neumorph_shapeType="pressed">
-                        <EditText
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@android:color/transparent"
-                            android:fontFamily="@font/nanumgothicregular"
-                            android:hint="@string/paySearchIdHint"
-                            android:autofillHints="memberId"
-                            android:inputType="text"
-                            android:padding="10dp"
-                            android:textColor="@color/mainText"
-                            android:textSize="15sp" />
-                    </soup.neumorphism.NeumorphCardView>
-                    <soup.neumorphism.NeumorphButton
-                        style="@style/Widget.Neumorph.Button"
-                        android:id="@+id/paySearchBtn"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/search"
-                        android:padding="0dp"
-                        android:textSize="20sp" />
-                </LinearLayout>
+                        android:orientation="horizontal">
+                        <soup.neumorphism.NeumorphCardView
+                            style="@style/Widget.Neumorph.CardView"
+                            android:id="@+id/input_searchIdPay"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="6"
+                            android:padding="15dp"
+                            app:neumorph_shapeType="pressed">
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@android:color/transparent"
+                                android:fontFamily="@font/nanumgothicregular"
+                                android:hint="@string/paySearchIdHint"
+                                android:autofillHints="memberId"
+                                android:inputType="text"
+                                android:padding="10dp"
+                                android:textColor="@color/mainText"
+                                android:textSize="15sp" />
+                        </soup.neumorphism.NeumorphCardView>
+                        <soup.neumorphism.NeumorphButton
+                            style="@style/Widget.Neumorph.Button"
+                            android:id="@+id/paySearchBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/search"
+                            android:padding="0dp"
+                            android:textSize="20sp" />
+                    </LinearLayout>
                 <soup.neumorphism.NeumorphCardView
                     style="@style/Widget.Neumorph.CardView"
                     android:layout_width="match_parent"
@@ -402,12 +444,12 @@
                             app:neumorph_shapeType="pressed">
                         <!-- 여기를 라디오그룹과 라디오버튼으로 수정 edittext는 나중에 삭제-->
                             <RadioGroup
-                                android:id="@+id/categroryRadioGroup"
+                                android:id="@+id/categoryRadioGroup"
                                 android:checkableBehavior="single"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent">
                                 <RadioButton
-                                    android:checked="true"
+                                    android:checked="false"
                                     android:id="@+id/categoryRadioBtn1"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"

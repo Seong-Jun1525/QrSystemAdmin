@@ -3,10 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="@color/white"
     android:padding="20dp">
 
     <TextView
-        android:id="@+id/textViewUserNum"
+        android:id="@+id/textViewMemberNum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
@@ -16,21 +17,21 @@
         android:layout_marginBottom="10dp"/>
 
     <TextView
-        android:id="@+id/textViewUserId"
+        android:id="@+id/textViewMemberId"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textColor="@android:color/black"/>
 
     <TextView
-        android:id="@+id/textViewUserDate"
+        android:id="@+id/textViewMemberDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textColor="@android:color/black"/>
 
     <TextView
-        android:id="@+id/textViewUserPoint"
+        android:id="@+id/textViewMemberPoint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"

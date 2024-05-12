@@ -39,7 +39,7 @@ public class TodoListAdapter extends ArrayAdapter<TodoData> {
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View listItem = convertView;
         if (listItem == null) {
-            listItem = LayoutInflater.from(mContext).inflate(R.layout.todo_list, parent, false);
+            listItem = LayoutInflater.from(mContext).inflate(R.layout.todo_list_item, parent, false);
         }
 
         final TodoData currentItem = todoList.get(position);
